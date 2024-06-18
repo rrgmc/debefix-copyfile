@@ -1,7 +1,7 @@
 package copyfile
 
 import (
-	"errors"
+	"path/filepath"
 
 	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
@@ -10,8 +10,11 @@ import (
 
 type CopyFile struct {
 	debefix.ValueImpl
-	callback         Callback
-	setValueCallback SetValueCallback
+	sourcePath       string
+	destinationPath  string
+	getPathsCallback GetPathsCallback
+	getValueCallback GetValueCallback
+	copyFileCallback CopyFileCallback
 }
 
 var (
@@ -39,11 +42,22 @@ func (c *CopyFile) RowResolved(ctx debefix.ValueResolveContext) error {
 	// after row was resolved, call the callback to copy the file
 	md := getMetadata(ctx.Row().Metadata)
 	for fieldname, file := range md.Fields {
-		if c.callback != nil {
-			err := c.callback(ctx, fieldname, file)
-			if err != nil {
-				return err
-			}
+		getPathsCallback := c.getPathsCallback
+		if getPathsCallback == nil {
+			getPathsCallback = DefaultGetPathsCallback
+		}
+		source, destination, err := getPathsCallback(ctx, fieldname, file)
+		if err != nil {
+			return err
+		}
+
+		copyFileCallback := c.copyFileCallback
+		if copyFileCallback == nil {
+			copyFileCallback = DefaultCopyFileCallback
+		}
+		err = copyFileCallback(filepath.Join(c.sourcePath, source), filepath.Join(c.destinationPath, destination))
+		if err != nil {
+			return err
 		}
 	}
 	return nil
@@ -62,14 +76,12 @@ var (
 func (c *copyFileValue) GetValueCallback(ctx debefix.ValueCallbackResolveContext) (resolvedValue any, addField bool, err error) {
 	// copy the metadata to the row being processed, so it is available to [CopyFile.RowResolved].
 	setMetadata(ctx, c.fileData)
-	if !c.fileData.SetValue {
-		// don't add a data field
-		return nil, false, nil
+
+	getValueCallback := c.cf.getValueCallback
+	if getValueCallback == nil {
+		getValueCallback = DefaultGetValueCallback
 	}
-	if c.cf.setValueCallback == nil {
-		return nil, false, errors.New("setValueCallback not set")
-	}
-	return c.cf.setValueCallback(ctx, c.fileData)
+	return getValueCallback(ctx, c.fileData)
 }
 
 const (

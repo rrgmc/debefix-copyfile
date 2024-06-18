@@ -4,16 +4,23 @@ import (
 	"bytes"
 	"cmp"
 	"fmt"
-	"io"
 	"slices"
 	"strings"
 
 	"golang.org/x/exp/maps"
 )
 
-type ParsedString struct {
-	str    string
-	fields map[string]parsedStringField
+func ReplaceFields(str string, values map[string]any) (string, error) {
+	return ParseFields(str).Replace(values)
+}
+
+func ParseFields(str string) *ParsedFields {
+	ret := &ParsedFields{
+		str:    str,
+		fields: make(map[string]parsedFieldsField),
+	}
+	ret.parse()
+	return ret
 }
 
 const (
@@ -21,27 +28,18 @@ const (
 	closeBrace = '}'
 )
 
-func Replace(str string, values map[string]any) (string, error) {
-	p := Parse(str)
-	return p.Replace(values)
+type ParsedFields struct {
+	str    string
+	fields map[string]parsedFieldsField
 }
 
-func Parse(str string) *ParsedString {
-	ret := &ParsedString{
-		str:    str,
-		fields: make(map[string]parsedStringField),
-	}
-	ret.parse()
-	return ret
-}
-
-func (s *ParsedString) Fields() []string {
+func (s *ParsedFields) Fields() []string {
 	return maps.Keys(s.fields)
 }
 
-func (s *ParsedString) Replace(values map[string]any) (string, error) {
+func (s *ParsedFields) Replace(values map[string]any) (string, error) {
 	fields := maps.Values(s.fields)
-	slices.SortFunc(fields, func(a, b parsedStringField) int {
+	slices.SortFunc(fields, func(a, b parsedFieldsField) int {
 		return cmp.Compare(a.start, b.start)
 	})
 
@@ -65,7 +63,7 @@ func (s *ParsedString) Replace(values map[string]any) (string, error) {
 	return sb.String(), nil
 }
 
-func (s *ParsedString) parse() {
+func (s *ParsedFields) parse() {
 	r := newParser(s.str)
 
 	isOpen := false
@@ -104,7 +102,7 @@ func (s *ParsedString) parse() {
 					if ok {
 						r.unread()
 					}
-					s.fields[paramName.String()] = parsedStringField{
+					s.fields[paramName.String()] = parsedFieldsField{
 						name:  paramName.String(),
 						start: start,
 						end:   idx + 1,
@@ -123,34 +121,8 @@ func (s *ParsedString) parse() {
 	}
 }
 
-type parsedStringField struct {
+type parsedFieldsField struct {
 	name  string
 	start int
 	end   int
-}
-
-type parser struct {
-	r *bytes.Reader
-}
-
-func newParser(str string) parser {
-	return parser{r: bytes.NewReader([]byte(str))}
-}
-
-func (p *parser) next() (rune, bool) {
-	ch, _, err := p.r.ReadRune()
-	if err != nil {
-		if err != io.EOF {
-			panic(err)
-		}
-		return 0, false
-	}
-	return ch, true
-}
-
-func (p *parser) unread() {
-	err := p.r.UnreadRune()
-	if err != nil {
-		panic(err)
-	}
 }

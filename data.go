@@ -5,8 +5,8 @@ type FileDataList struct {
 }
 
 type FileData struct {
-	ID       string `yaml:"id"`
-	SetValue bool   `yaml:"setValue"`
-	Src      string `yaml:"src"`
-	Dest     string `yaml:"dest"`
+	ID          string  `yaml:"id"`
+	Value       *string `yaml:"value"`
+	Source      string  `yaml:"source"`
+	Destination string  `yaml:"destination"`
 }

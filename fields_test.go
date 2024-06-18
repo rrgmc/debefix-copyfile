@@ -69,7 +69,7 @@ func TestParse(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			p := Parse(test.str)
+			p := ParseFields(test.str)
 			assert.DeepEqual(t, maps.Keys(test.expectedFields), maps.Keys(p.fields), cmpopts.SortSlices(cmp.Less[string]))
 			for fn, field := range p.fields {
 				fv := p.str[field.start:field.end]
@@ -126,7 +126,7 @@ func TestReplace(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			p := Parse(test.str)
+			p := ParseFields(test.str)
 			pr, err := p.Replace(test.values)
 			if !test.expectedErr {
 				assert.NilError(t, err)
