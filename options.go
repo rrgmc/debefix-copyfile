@@ -6,7 +6,7 @@ type GetPathsCallback func(ctx debefix.ValueResolveContext, fieldname string, fi
 
 type GetValueCallback func(ctx debefix.ValueCallbackResolveContext, fileData FileData) (value any, addField bool, err error)
 
-type CopyFileCallback func(sourceFilename, destinationFilename string) error
+type CopyFileCallback func(sourcePath, sourceFilename string, destinationPath, destinationFilename string) error
 
 type Option func(*CopyFile)
 

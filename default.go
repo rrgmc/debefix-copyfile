@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/rrgmc/debefix"
 )
@@ -50,8 +51,15 @@ func DefaultGetValueCallback(ctx debefix.ValueCallbackResolveContext, fileData F
 	return sv, true, nil
 }
 
-func DefaultCopyFileCallback(sourceFilename, destinationFilename string) error {
-	sourceFileStat, err := os.Stat(sourceFilename)
+func DefaultCopyFileCallback(sourcePath, sourceFilename string, destinationPath, destinationFilename string) error {
+	if sourcePath != "" || destinationPath != "" {
+		return fmt.Errorf("source and destination paths are required")
+	}
+	if sourceFilename != "" || destinationFilename != "" {
+		return fmt.Errorf("source and destination file names are required")
+	}
+
+	sourceFileStat, err := os.Stat(filepath.Join(sourcePath, sourceFilename))
 	if err != nil {
 		return err
 	}
@@ -60,7 +68,7 @@ func DefaultCopyFileCallback(sourceFilename, destinationFilename string) error {
 		return fmt.Errorf("%s is not a regular file", sourceFilename)
 	}
 
-	source, err := os.Open(sourceFilename)
+	source, err := os.Open(filepath.Join(sourcePath, sourceFilename))
 	if err != nil {
 		return err
 	}

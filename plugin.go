@@ -1,8 +1,6 @@
 package copyfile
 
 import (
-	"path/filepath"
-
 	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
 	"github.com/rrgmc/debefix"
@@ -55,7 +53,7 @@ func (c *CopyFile) RowResolved(ctx debefix.ValueResolveContext) error {
 		if copyFileCallback == nil {
 			copyFileCallback = DefaultCopyFileCallback
 		}
-		err = copyFileCallback(filepath.Join(c.sourcePath, source), filepath.Join(c.destinationPath, destination))
+		err = copyFileCallback(c.sourcePath, source, c.destinationPath, destination)
 		if err != nil {
 			return err
 		}
