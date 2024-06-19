@@ -9,6 +9,7 @@ import (
 	"github.com/rrgmc/debefix"
 )
 
+// ReplaceFieldsWithFilter replaces curly-braces separated fields in str as debefix filter expressions.
 func ReplaceFieldsWithFilter(str string, ctx debefix.ValueResolveContext) (string, error) {
 	p := ParseFields(str)
 	if len(p.Fields()) == 0 {
@@ -28,6 +29,7 @@ func ReplaceFieldsWithFilter(str string, ctx debefix.ValueResolveContext) (strin
 	return p.Replace(replaceValues)
 }
 
+// DefaultGetPathsCallback is the default implementation of GetPathsCallback.
 func DefaultGetPathsCallback(ctx debefix.ValueResolveContext, fieldname string, fileData FileData) (source string, destination string, err error) {
 	source, err = ReplaceFieldsWithFilter(fileData.Source, ctx)
 	if err != nil {
@@ -40,6 +42,7 @@ func DefaultGetPathsCallback(ctx debefix.ValueResolveContext, fieldname string, 
 	return source, destination, nil
 }
 
+// DefaultGetValueCallback is the default implementation of GetValueCallback.
 func DefaultGetValueCallback(ctx debefix.ValueCallbackResolveContext, fileData FileData) (value any, addField bool, err error) {
 	if fileData.Value == nil {
 		return nil, false, nil
@@ -51,6 +54,7 @@ func DefaultGetValueCallback(ctx debefix.ValueCallbackResolveContext, fileData F
 	return sv, true, nil
 }
 
+// DefaultCopyFileCallback is the default implementation of CopyFileCallback.
 func DefaultCopyFileCallback(sourcePath, sourceFilename string, destinationPath, destinationFilename string) error {
 	if sourcePath != "" || destinationPath != "" {
 		return fmt.Errorf("source and destination paths are required")

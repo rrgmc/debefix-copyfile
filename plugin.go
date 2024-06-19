@@ -6,6 +6,7 @@ import (
 	"github.com/rrgmc/debefix"
 )
 
+// CopyFile is a debefix plugin to configure files to be copied during the data generation process.
 type CopyFile struct {
 	debefix.ValueImpl
 	sourcePath       string
@@ -86,13 +87,17 @@ const (
 	metadataName = "__copyfile__"
 )
 
-func getMetadata(metadata map[string]any) *FileDataList {
+type fileDataList struct {
+	Fields map[string]FileData `json:"fields"`
+}
+
+func getMetadata(metadata map[string]any) *fileDataList {
 	if md, ok := metadata[metadataName]; ok {
-		if mdfl, ok := md.(*FileDataList); ok {
+		if mdfl, ok := md.(*fileDataList); ok {
 			return mdfl
 		}
 	}
-	return &FileDataList{
+	return &fileDataList{
 		Fields: map[string]FileData{},
 	}
 }

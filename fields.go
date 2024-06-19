@@ -10,10 +10,14 @@ import (
 	"golang.org/x/exp/maps"
 )
 
+// ReplaceFields parses curly-brace-delimited fields in strings and replaces them with values.
+// To escape a curly-brace, add two consecutive ones.
 func ReplaceFields(str string, values map[string]any) (string, error) {
 	return ParseFields(str).Replace(values)
 }
 
+// ParseFields parses curly-brace-delimited fields in strings and allows listing and replacing them.
+// To escape a curly-brace, add two consecutive ones.
 func ParseFields(str string) *ParsedFields {
 	ret := &ParsedFields{
 		str:    str,
@@ -28,15 +32,18 @@ const (
 	closeBrace = '}'
 )
 
+// ParsedFields stores the parsed fields from ParseFields.
 type ParsedFields struct {
 	str    string
 	fields map[string]parsedFieldsField
 }
 
+// Fields returns the list of fields found.
 func (s *ParsedFields) Fields() []string {
 	return maps.Keys(s.fields)
 }
 
+// Replace returns a new string with all fields replaced with values.
 func (s *ParsedFields) Replace(values map[string]any) (string, error) {
 	fields := maps.Values(s.fields)
 	slices.SortFunc(fields, func(a, b parsedFieldsField) int {
