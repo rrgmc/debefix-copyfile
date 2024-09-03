@@ -56,10 +56,10 @@ func DefaultGetValueCallback(ctx debefix.ValueCallbackResolveContext, fileData F
 
 // DefaultCopyFileCallback is the default implementation of CopyFileCallback.
 func DefaultCopyFileCallback(sourcePath, sourceFilename string, destinationPath, destinationFilename string) error {
-	if sourcePath != "" || destinationPath != "" {
+	if sourcePath == "" || destinationPath == "" {
 		return fmt.Errorf("source and destination paths are required")
 	}
-	if sourceFilename != "" || destinationFilename != "" {
+	if sourceFilename == "" || destinationFilename == "" {
 		return fmt.Errorf("source and destination file names are required")
 	}
 
@@ -78,7 +78,14 @@ func DefaultCopyFileCallback(sourcePath, sourceFilename string, destinationPath,
 	}
 	defer source.Close()
 
-	destination, err := os.Create(destinationFilename)
+	destinationFullFilename := filepath.Join(destinationPath, destinationFilename)
+
+	err = os.MkdirAll(filepath.Dir(destinationFullFilename), os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	destination, err := os.Create(destinationFullFilename)
 	if err != nil {
 		return err
 	}
