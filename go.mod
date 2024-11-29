@@ -1,3 +1,4 @@
+// Deprecated: use github.com/rrgmc/debefix-value/v2/copyfile instead.
 module github.com/rrgmc/debefix-copyfile
 
 go 1.22
